@@ -1,0 +1,30 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F7FDFD;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.MuiButton-containedPrimary {
+  background-color: #00E6B2 !important;
+  color: #023365 !important;
+  font-weight: 700;
+}
+
+.MuiButton-containedPrimary:hover {
+  background-color: #00C298 !important;
+}
+
+.MuiPaper-root {
+  border-radius: 16px !important;
+} 
