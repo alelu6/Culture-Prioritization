@@ -12,11 +12,15 @@ export const createSession = (sessionData) => {
   }
   sessions.set(sessionId, session)
   votes.set(sessionId, [])
+  console.log('Session created:', sessionId, session)
+  console.log('All sessions:', Array.from(sessions.keys()))
   return sessionId
 }
 
 export const getSession = (sessionId) => {
-  return sessions.get(sessionId)
+  const session = sessions.get(sessionId)
+  console.log('Getting session:', sessionId, session)
+  return session
 }
 
 export const getAllSessions = () => {

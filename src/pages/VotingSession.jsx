@@ -25,9 +25,14 @@ function VotingSession() {
 
   // Get session data
   const sessionData = getSession(sessionId)
+  
+  // Debug logging
+  console.log('VotingSession - sessionId:', sessionId)
+  console.log('VotingSession - sessionData:', sessionData)
 
   // Show error if session doesn't exist
   if (!sessionData) {
+    console.log('VotingSession - No session data found for ID:', sessionId)
     return (
       <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
         <Alert severity="error" sx={{ mb: 3 }}>
