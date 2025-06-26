@@ -9,80 +9,11 @@ import {
   CardContent,
   Divider,
   IconButton,
+  Alert,
+  Button,
 } from '@mui/material'
 import HomeIcon from '@mui/icons-material/Home'
-
-// Mock results data for demonstration
-const mockResultsData = {
-  name: 'Sample Session',
-  xAxis: 'Impact',
-  yAxis: 'Urgency',
-  strategicPriorities: ['Low', 'High'], // For both axes
-  categories: [
-    { name: 'Category 1', components: [
-      { name: 'Component 1', description: 'Description 1', x: 'High', y: 'High' },
-      { name: 'Component 2', description: 'Description 2', x: 'Low', y: 'Mid' },
-    ] },
-    { name: 'Category 2', components: [
-      { name: 'Component 3', description: 'Description 3', x: 'Mid', y: 'Low' },
-    ] },
-  ],
-}
-
-// --- SAMPLE DATA FOR PREVIEW ---
-const sampleParticipants = [
-  { id: 1, name: 'Alice' },
-  { id: 2, name: 'Bob' },
-  { id: 3, name: 'Carol' },
-  { id: 4, name: 'David' },
-]
-const sampleComponents = [
-  { id: 1, name: 'Component A', description: 'First component' },
-  { id: 2, name: 'Component B', description: 'Second component' },
-  { id: 3, name: 'Component C', description: 'Third component' },
-  { id: 4, name: 'Component D', description: 'Fourth component' },
-]
-// Each vote: { participantId, componentId, impact: 'high'|'low', urgency: 'high'|'low' }
-const sampleVotes = [
-  { participantId: 1, componentId: 1, impact: 'high', urgency: 'high' },
-  { participantId: 2, componentId: 1, impact: 'high', urgency: 'low' },
-  { participantId: 3, componentId: 1, impact: 'high', urgency: 'high' },
-  { participantId: 4, componentId: 1, impact: 'low', urgency: 'high' },
-
-  { participantId: 1, componentId: 2, impact: 'low', urgency: 'low' },
-  { participantId: 2, componentId: 2, impact: 'low', urgency: 'low' },
-  { participantId: 3, componentId: 2, impact: 'low', urgency: 'low' },
-  { participantId: 4, componentId: 2, impact: 'low', urgency: 'low' },
-
-  { participantId: 1, componentId: 3, impact: 'high', urgency: 'low' },
-  { participantId: 2, componentId: 3, impact: 'high', urgency: 'low' },
-  { participantId: 3, componentId: 3, impact: 'low', urgency: 'low' },
-  { participantId: 4, componentId: 3, impact: 'high', urgency: 'low' },
-
-  { participantId: 1, componentId: 4, impact: 'low', urgency: 'high' },
-  { participantId: 2, componentId: 4, impact: 'low', urgency: 'high' },
-  { participantId: 3, componentId: 4, impact: 'low', urgency: 'high' },
-  { participantId: 4, componentId: 4, impact: 'low', urgency: 'high' },
-]
-const participantCount = sampleParticipants.length
-
-// For each component, count high/low votes for impact and urgency
-const componentResults = sampleComponents.map((comp) => {
-  const votes = sampleVotes.filter((v) => v.componentId === comp.id)
-  const highImpactVotes = votes.filter((v) => v.impact === 'high').length
-  const highUrgencyVotes = votes.filter((v) => v.urgency === 'high').length
-  const impact = highImpactVotes > participantCount / 2 ? 'high' : 'low'
-  const urgency = highUrgencyVotes > participantCount / 2 ? 'high' : 'low'
-  return { ...comp, impact, urgency }
-})
-// Build quadrant matrix: [row][col] (row: impact, col: urgency)
-const quadrantMatrix = {
-  high: { high: [], low: [] },
-  low: { high: [], low: [] },
-}
-componentResults.forEach((comp) => {
-  quadrantMatrix[comp.impact][comp.urgency].push(comp)
-})
+import { getSession, getSessionVotes, calculateResults } from '../utils/sessionStorage'
 
 // Add quadrant labels and colors for the matrix
 const quadrantLabels = [
@@ -96,23 +27,64 @@ const quadrantColors = [
 ];
 
 function Results() {
+  const { sessionId } = useParams()
+  const navigate = useNavigate()
+  
+  // Get session data
+  const sessionData = getSession(sessionId)
+  const sessionVotes = getSessionVotes(sessionId)
+  const componentResults = calculateResults(sessionId)
+
+  // Show error if session doesn't exist
+  if (!sessionData) {
+    return (
+      <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          Session not found. Please check the Session ID and try again.
+        </Alert>
+        <Button variant="contained" onClick={() => navigate('/')}>
+          Go to Home
+        </Button>
+      </Box>
+    )
+  }
+
+  // Build quadrant matrix: [row][col] (row: impact, col: urgency)
+  const quadrantMatrix = {
+    high: { high: [], low: [] },
+    low: { high: [], low: [] },
+  }
+  
+  componentResults.forEach((comp) => {
+    quadrantMatrix[comp.impact][comp.urgency].push(comp)
+  })
+
   // IBM Plex Sans font import (for global use, but here for local override)
   const fontFamily = 'IBM Plex Sans, Inter, Roboto, Arial, sans-serif';
 
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', mt: 6, position: 'relative', fontFamily }}>
-      {/* Title above matrix */}
-      <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontFamily, fontWeight: 700, mb: 2 }}>
-        Sample Session - Priority Matrix Results
-      </Typography>
+      {/* Header with session info */}
+      <Box sx={{ mb: 4, textAlign: 'center' }}>
+        <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontFamily, fontWeight: 700, mb: 2 }}>
+          {sessionData.name} - Priority Matrix Results
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+          Session ID: {sessionId}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Total Participants: {sessionVotes.length}
+        </Typography>
+      </Box>
+
       <Box sx={{ position: 'relative', width: '100%', maxWidth: 500, aspectRatio: '1', mx: 'auto', mb: 6 }}>
         {/* Impact axis label (left, vertical, further left) */}
         <Box sx={{ position: 'absolute', left: -110, top: '50%', transform: 'translateY(-50%) rotate(-90deg)', fontFamily, fontWeight: 600, fontSize: 20, color: '#222', letterSpacing: 1, textAlign: 'center', width: 120, pointerEvents: 'none' }}>
-          Impact
+          {sessionData.xAxis}
         </Box>
         {/* Urgency axis label (bottom, horizontal, further down) */}
         <Box sx={{ position: 'absolute', left: 0, right: 0, bottom: -62, fontFamily, fontWeight: 600, fontSize: 20, color: '#222', letterSpacing: 1, textAlign: 'center', pointerEvents: 'none' }}>
-          Urgency
+          {sessionData.yAxis}
         </Box>
         {/* Low/High for Impact (vertical axis, rotated, closer to matrix) */}
         <Box sx={{ position: 'absolute', left: -28, top: 28, fontFamily, fontWeight: 500, fontSize: 16, color: '#222', textAlign: 'center', pointerEvents: 'none', transform: 'rotate(-90deg)', transformOrigin: 'left top' }}>High</Box>
@@ -170,26 +142,55 @@ function Results() {
                   {quadrantLabels[rowIdx][colIdx]}
                 </Typography>
                 {/* Render components in this quadrant with vote counts */}
-                {quadrantMatrix[impact][urgency].map((comp) => {
-                  const votes = sampleVotes.filter((v) => v.componentId === comp.id)
-                  const highImpactVotes = votes.filter((v) => v.impact === 'high').length
-                  const lowImpactVotes = votes.filter((v) => v.impact === 'low').length
-                  const highUrgencyVotes = votes.filter((v) => v.urgency === 'high').length
-                  const lowUrgencyVotes = votes.filter((v) => v.urgency === 'low').length
-                  return (
-                    <Box key={comp.id} sx={{ mt: 2, mb: 1, px: 2, py: 1, bgcolor: '#fff', borderRadius: 2, boxShadow: 1, minWidth: 180 }}>
-                      <Typography sx={{ fontFamily, fontWeight: 600, color: '#023365', fontSize: 18 }}>{comp.name}</Typography>
-                      <Typography sx={{ fontFamily, fontWeight: 400, color: '#555', fontSize: 14 }}>
-                        Impact: High {highImpactVotes} / Low {lowImpactVotes} <br/>
-                        Urgency: High {highUrgencyVotes} / Low {lowUrgencyVotes}
-                      </Typography>
-                    </Box>
-                  )
-                })}
+                {quadrantMatrix[impact][urgency].map((comp) => (
+                  <Box key={comp.key} sx={{ mt: 2, mb: 1, px: 2, py: 1, bgcolor: '#fff', borderRadius: 2, boxShadow: 1, minWidth: 180 }}>
+                    <Typography sx={{ fontFamily, fontWeight: 600, color: '#023365', fontSize: 18 }}>{comp.name}</Typography>
+                    <Typography sx={{ fontFamily, fontWeight: 400, color: '#555', fontSize: 14 }}>
+                      {sessionData.xAxis}: High {comp.highImpactVotes} / Low {comp.totalVotes - comp.highImpactVotes} <br/>
+                      {sessionData.yAxis}: High {comp.highUrgencyVotes} / Low {comp.totalVotes - comp.highUrgencyVotes}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
             ))
           )}
         </Box>
+      </Box>
+
+      {/* Participants list */}
+      {sessionVotes.length > 0 && (
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Participants ({sessionVotes.length})
+          </Typography>
+          <Grid container spacing={1}>
+            {sessionVotes.map((vote, index) => (
+              <Grid item xs={12} sm={6} md={4} key={vote.id}>
+                <Typography variant="body2" color="text.secondary">
+                  {index + 1}. {vote.participantName}
+                </Typography>
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
+      )}
+
+      {/* Navigation buttons */}
+      <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Button
+          variant="contained"
+          startIcon={<HomeIcon />}
+          onClick={() => navigate('/')}
+          sx={{ mr: 2 }}
+        >
+          Go to Home
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => navigate(`/session/${sessionId}`)}
+        >
+          Join Session Again
+        </Button>
       </Box>
     </Box>
   )

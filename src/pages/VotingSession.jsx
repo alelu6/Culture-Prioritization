@@ -10,23 +10,9 @@ import {
   Checkbox,
   FormControlLabel,
   Grid,
+  CircularProgress,
 } from '@mui/material'
-
-// Mock session data for demonstration
-const mockSessionData = {
-  name: 'Sample Session',
-  xAxis: 'Impact',
-  yAxis: 'Urgency',
-  categories: [
-    { name: 'Category 1', components: [
-      { name: 'Component 1', description: 'Description 1' },
-      { name: 'Component 2', description: 'Description 2' },
-    ] },
-    { name: 'Category 2', components: [
-      { name: 'Component 3', description: 'Description 3' },
-    ] },
-  ],
-}
+import { getSession, saveVote } from '../utils/sessionStorage'
 
 function VotingSession() {
   const { sessionId } = useParams()
@@ -35,9 +21,24 @@ function VotingSession() {
   // votes: { componentKey: { impact: boolean, urgency: boolean } }
   const [votes, setVotes] = useState({})
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  // In a real app, fetch session data by sessionId
-  const sessionData = mockSessionData
+  // Get session data
+  const sessionData = getSession(sessionId)
+
+  // Show error if session doesn't exist
+  if (!sessionData) {
+    return (
+      <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          Session not found. Please check the Session ID and try again.
+        </Alert>
+        <Button variant="contained" onClick={() => navigate('/')}>
+          Go to Home
+        </Button>
+      </Box>
+    )
+  }
 
   // Helper to get all components with their category
   const allComponents = sessionData.categories.flatMap((cat, catIdx) =>
@@ -67,14 +68,26 @@ function VotingSession() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!participantName) {
+    if (!participantName.trim()) {
       setError('Please enter your name')
       return
     }
-    // Here you would typically save the votes to your backend
-    navigate(`/results/${sessionId}`)
+    
+    setLoading(true)
+    setError('')
+    
+    try {
+      // Save the vote
+      await saveVote(sessionId, participantName, votes)
+      
+      // Navigate to results
+      navigate(`/results/${sessionId}`)
+    } catch (err) {
+      setError('Failed to submit votes. Please try again.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -152,8 +165,9 @@ function VotingSession() {
             color="primary"
             size="large"
             fullWidth
+            disabled={loading}
           >
-            Submit Votes
+            {loading ? <CircularProgress size={24} /> : 'Submit Votes'}
           </Button>
         </form>
       </Paper>

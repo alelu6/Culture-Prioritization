@@ -13,9 +13,16 @@ import {
   Select,
   MenuItem,
   Divider,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import { createSession } from '../utils/sessionStorage'
 
 const VOTE_LEVELS = ['High', 'Low']
 
@@ -29,6 +36,9 @@ function CreateSession() {
     { name: 'Category 1', components: [{ name: '', description: '' }] },
   ])
   const [votesPerLevel, setVotesPerLevel] = useState({ High: 1 })
+  const [showSessionCreated, setShowSessionCreated] = useState(false)
+  const [createdSessionId, setCreatedSessionId] = useState('')
+  const [error, setError] = useState('')
 
   // Strategic Priorities handlers
   const handleAddPriority = () => {
@@ -81,10 +91,47 @@ function CreateSession() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Here you would typically save the session to your backend
-    const sessionId = Math.random().toString(36).substr(2, 9)
-    // For now, we'll just navigate to the session page
-    navigate(`/session/${sessionId}`)
+    
+    // Validate required fields
+    if (!sessionName.trim()) {
+      setError('Session name is required')
+      return
+    }
+    
+    if (!categories.every(cat => cat.name.trim() && cat.components.every(comp => comp.name.trim()))) {
+      setError('All categories and components must have names')
+      return
+    }
+    
+    setError('')
+    
+    // Create session data
+    const sessionData = {
+      name: sessionName,
+      xAxis,
+      yAxis,
+      strategicPriorities,
+      categories,
+      votesPerLevel
+    }
+    
+    // Create session and get ID
+    const sessionId = createSession(sessionData)
+    setCreatedSessionId(sessionId)
+    setShowSessionCreated(true)
+  }
+
+  const handleCopySessionId = () => {
+    navigator.clipboard.writeText(createdSessionId)
+  }
+
+  const handleGoToSession = () => {
+    navigate(`/session/${createdSessionId}`)
+  }
+
+  const handleCloseDialog = () => {
+    setShowSessionCreated(false)
+    navigate('/')
   }
 
   return (
@@ -92,6 +139,12 @@ function CreateSession() {
       <Typography variant="h4" component="h1" gutterBottom>
         Create New Priority Session
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <TextField
@@ -246,6 +299,44 @@ function CreateSession() {
           Create Session
         </Button>
       </Paper>
+
+      <Dialog open={showSessionCreated} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ color: '#00E6B2', fontWeight: 700 }}>
+          🎉 Session Created Successfully!
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Your session has been created. Share this Session ID with your participants:
+          </Typography>
+          <Paper sx={{ p: 2, mb: 2, background: '#F7FDFD', border: '1px solid #00E6B2' }}>
+            <Typography variant="h6" sx={{ fontFamily: 'monospace', fontWeight: 700, color: '#023365' }}>
+              {createdSessionId}
+            </Typography>
+          </Paper>
+          <Typography variant="body2" color="text.secondary">
+            Participants can join by going to the home page and entering this Session ID.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button 
+            onClick={handleCopySessionId} 
+            startIcon={<ContentCopyIcon />}
+            variant="outlined"
+          >
+            Copy Session ID
+          </Button>
+          <Button 
+            onClick={handleGoToSession} 
+            variant="contained"
+            color="primary"
+          >
+            Go to Session
+          </Button>
+          <Button onClick={handleCloseDialog}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
