@@ -115,8 +115,12 @@ function CreateSession() {
       votesPerLevel
     }
     
+    console.log('Creating session with data:', sessionData)
+    
     // Create session and get ID
     const sessionId = createSession(sessionData)
+    console.log('Session created with ID:', sessionId)
+    
     setCreatedSessionId(sessionId)
     setShowSessionCreated(true)
   }

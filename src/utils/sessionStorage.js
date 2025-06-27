@@ -6,6 +6,7 @@ const VOTES_KEY = 'culture_prioritization_votes'
 const getStoredSessions = () => {
   try {
     const stored = localStorage.getItem(SESSIONS_KEY)
+    console.log('Reading sessions from localStorage:', stored)
     return stored ? new Map(JSON.parse(stored)) : new Map()
   } catch (error) {
     console.error('Error reading sessions from localStorage:', error)
@@ -15,7 +16,9 @@ const getStoredSessions = () => {
 
 const setStoredSessions = (sessions) => {
   try {
-    localStorage.setItem(SESSIONS_KEY, JSON.stringify(Array.from(sessions.entries())))
+    const dataToStore = JSON.stringify(Array.from(sessions.entries()))
+    console.log('Writing sessions to localStorage:', dataToStore)
+    localStorage.setItem(SESSIONS_KEY, dataToStore)
   } catch (error) {
     console.error('Error writing sessions to localStorage:', error)
   }
@@ -24,6 +27,7 @@ const setStoredSessions = (sessions) => {
 const getStoredVotes = () => {
   try {
     const stored = localStorage.getItem(VOTES_KEY)
+    console.log('Reading votes from localStorage:', stored)
     return stored ? new Map(JSON.parse(stored)) : new Map()
   } catch (error) {
     console.error('Error reading votes from localStorage:', error)
@@ -33,10 +37,26 @@ const getStoredVotes = () => {
 
 const setStoredVotes = (votes) => {
   try {
-    localStorage.setItem(VOTES_KEY, JSON.stringify(Array.from(votes.entries())))
+    const dataToStore = JSON.stringify(Array.from(votes.entries()))
+    console.log('Writing votes to localStorage:', dataToStore)
+    localStorage.setItem(VOTES_KEY, dataToStore)
   } catch (error) {
     console.error('Error writing votes to localStorage:', error)
   }
+}
+
+// Function to clear all stored data (for debugging)
+export const clearAllData = () => {
+  localStorage.removeItem(SESSIONS_KEY)
+  localStorage.removeItem(VOTES_KEY)
+  console.log('All session data cleared')
+}
+
+// Function to list all sessions (for debugging)
+export const listAllSessions = () => {
+  const sessions = getStoredSessions()
+  console.log('All stored sessions:', Array.from(sessions.entries()))
+  return Array.from(sessions.entries())
 }
 
 export const createSession = (sessionData) => {

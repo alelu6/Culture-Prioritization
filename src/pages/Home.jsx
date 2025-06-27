@@ -10,9 +10,20 @@ import {
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import GroupIcon from '@mui/icons-material/Group'
+import { clearAllData, listAllSessions } from '../utils/sessionStorage'
 
 function Home() {
   const navigate = useNavigate()
+
+  const handleDebugClear = () => {
+    clearAllData()
+    alert('All session data cleared!')
+  }
+
+  const handleDebugList = () => {
+    const sessions = listAllSessions()
+    alert(`Found ${sessions.length} sessions: ${sessions.map(([id, session]) => `${id}: ${session.name}`).join(', ')}`)
+  }
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
@@ -79,6 +90,19 @@ function Home() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Debug buttons - remove these after fixing the issue */}
+      <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <Typography variant="h6" sx={{ mb: 2, color: '#666' }}>
+          Debug Tools (Remove after fixing)
+        </Typography>
+        <Button onClick={handleDebugList} variant="outlined" sx={{ mr: 2 }}>
+          List All Sessions
+        </Button>
+        <Button onClick={handleDebugClear} variant="outlined" color="error">
+          Clear All Data
+        </Button>
+      </Box>
     </Box>
   )
 }
