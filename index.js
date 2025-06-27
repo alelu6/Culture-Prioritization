@@ -86,6 +86,17 @@ app.get('/api/votes/:sessionId', (req, res) => {
   }
 });
 
+// Debug endpoint to test API connectivity
+app.get('/api/session/debugtest', (req, res) => {
+  try {
+    const sessions = readJson(SESSIONS_FILE);
+    res.json({ message: 'API is working!', sessions });
+  } catch (err) {
+    console.error('[API] Debug endpoint error:', err);
+    res.status(500).json({ error: 'Debug endpoint failed' });
+  }
+});
+
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 

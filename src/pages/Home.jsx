@@ -25,6 +25,18 @@ function Home() {
     alert(`Found ${sessions.length} sessions: ${sessions.map(([id, session]) => `${id}: ${session.name}`).join(', ')}`)
   }
 
+  const handleDebugApi = async () => {
+    try {
+      const res = await fetch('/api/session/debugtest', { method: 'GET' })
+      const data = await res.json()
+      console.log('DEBUG /api/session/debugtest response:', data)
+      alert('DEBUG /api/session/debugtest response: ' + JSON.stringify(data))
+    } catch (err) {
+      console.error('DEBUG /api/session/debugtest error:', err)
+      alert('DEBUG /api/session/debugtest error: ' + err)
+    }
+  }
+
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom align="center">
@@ -99,8 +111,11 @@ function Home() {
         <Button onClick={handleDebugList} variant="outlined" sx={{ mr: 2 }}>
           List All Sessions
         </Button>
-        <Button onClick={handleDebugClear} variant="outlined" color="error">
+        <Button onClick={handleDebugClear} variant="outlined" color="error" sx={{ mr: 2 }}>
           Clear All Data
+        </Button>
+        <Button onClick={handleDebugApi} variant="outlined" color="secondary">
+          Test API /api/session/debugtest
         </Button>
       </Box>
     </Box>
