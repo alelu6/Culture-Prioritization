@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -11,6 +11,7 @@ import {
   IconButton,
   Alert,
   Button,
+  CircularProgress,
 } from '@mui/material'
 import HomeIcon from '@mui/icons-material/Home'
 import { getSession, getSessionVotes, calculateResults } from '../utils/sessionStorage'
@@ -29,25 +30,38 @@ const quadrantColors = [
 function Results() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  
-  // Get session data
-  const sessionData = getSession(sessionId)
-  const sessionVotes = getSessionVotes(sessionId)
-  const componentResults = calculateResults(sessionId)
+  const [sessionData, setSessionData] = useState(null)
+  const [sessionVotes, setSessionVotes] = useState([])
+  const [fetching, setFetching] = useState(true)
 
-  // Show error if session doesn't exist
+  useEffect(() => {
+    async function fetchData() {
+      setFetching(true)
+      const session = await getSession(sessionId)
+      const votes = await getSessionVotes(sessionId)
+      setSessionData(session)
+      setSessionVotes(votes)
+      setFetching(false)
+    }
+    fetchData()
+  }, [sessionId])
+
+  if (fetching) {
+    return <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, textAlign: 'center' }}><CircularProgress /></Box>
+  }
+
   if (!sessionData) {
     return (
       <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
         <Alert severity="error" sx={{ mb: 3 }}>
           Session not found. Please check the Session ID and try again.
         </Alert>
-        <Button variant="contained" onClick={() => navigate('/')}>
-          Go to Home
-        </Button>
+        <Button variant="contained" onClick={() => navigate('/')}>Go to Home</Button>
       </Box>
     )
   }
+
+  const componentResults = calculateResults(sessionData, sessionVotes)
 
   // Build quadrant matrix: [row][col] (row: impact, col: urgency)
   const quadrantMatrix = {

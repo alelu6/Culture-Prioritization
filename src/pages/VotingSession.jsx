@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -22,17 +22,24 @@ function VotingSession() {
   const [votes, setVotes] = useState({})
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [sessionData, setSessionData] = useState(null)
+  const [fetching, setFetching] = useState(true)
 
-  // Get session data
-  const sessionData = getSession(sessionId)
-  
-  // Debug logging
-  console.log('VotingSession - sessionId:', sessionId)
-  console.log('VotingSession - sessionData:', sessionData)
+  useEffect(() => {
+    async function fetchSession() {
+      setFetching(true)
+      const data = await getSession(sessionId)
+      setSessionData(data)
+      setFetching(false)
+    }
+    fetchSession()
+  }, [sessionId])
 
-  // Show error if session doesn't exist
+  if (fetching) {
+    return <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4, textAlign: 'center' }}><CircularProgress /></Box>
+  }
+
   if (!sessionData) {
-    console.log('VotingSession - No session data found for ID:', sessionId)
     return (
       <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
         <Alert severity="error" sx={{ mb: 3 }}>

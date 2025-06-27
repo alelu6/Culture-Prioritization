@@ -39,6 +39,7 @@ function CreateSession() {
   const [showSessionCreated, setShowSessionCreated] = useState(false)
   const [createdSessionId, setCreatedSessionId] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   // Strategic Priorities handlers
   const handleAddPriority = () => {
@@ -89,23 +90,18 @@ function CreateSession() {
     setVotesPerLevel({ ...votesPerLevel, [level]: Number(value) })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    // Validate required fields
     if (!sessionName.trim()) {
       setError('Session name is required')
       return
     }
-    
     if (!categories.every(cat => cat.name.trim() && cat.components.every(comp => comp.name.trim()))) {
       setError('All categories and components must have names')
       return
     }
-    
     setError('')
-    
-    // Create session data
+    setLoading(true)
     const sessionData = {
       name: sessionName,
       xAxis,
@@ -114,15 +110,14 @@ function CreateSession() {
       categories,
       votesPerLevel
     }
-    
-    console.log('Creating session with data:', sessionData)
-    
-    // Create session and get ID
-    const sessionId = createSession(sessionData)
-    console.log('Session created with ID:', sessionId)
-    
-    setCreatedSessionId(sessionId)
-    setShowSessionCreated(true)
+    try {
+      const sessionId = await createSession(sessionData)
+      setCreatedSessionId(sessionId)
+      setShowSessionCreated(true)
+    } catch (err) {
+      setError('Failed to create session. Please try again.')
+    }
+    setLoading(false)
   }
 
   const handleCopySessionId = () => {

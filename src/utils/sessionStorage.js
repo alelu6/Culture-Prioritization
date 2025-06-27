@@ -1,123 +1,43 @@
-// Persistent session storage using localStorage
-const SESSIONS_KEY = 'culture_prioritization_sessions'
-const VOTES_KEY = 'culture_prioritization_votes'
+// File-based session storage using server API endpoints
 
-// Helper functions for localStorage
-const getStoredSessions = () => {
-  try {
-    const stored = localStorage.getItem(SESSIONS_KEY)
-    console.log('Reading sessions from localStorage:', stored)
-    return stored ? new Map(JSON.parse(stored)) : new Map()
-  } catch (error) {
-    console.error('Error reading sessions from localStorage:', error)
-    return new Map()
-  }
+export const createSession = async (sessionData) => {
+  const response = await fetch('/api/session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(sessionData),
+  })
+  const data = await response.json()
+  return data.sessionId
 }
 
-const setStoredSessions = (sessions) => {
-  try {
-    const dataToStore = JSON.stringify(Array.from(sessions.entries()))
-    console.log('Writing sessions to localStorage:', dataToStore)
-    localStorage.setItem(SESSIONS_KEY, dataToStore)
-  } catch (error) {
-    console.error('Error writing sessions to localStorage:', error)
-  }
+export const getSession = async (sessionId) => {
+  const response = await fetch(`/api/session/${sessionId}`)
+  if (!response.ok) return null
+  return await response.json()
 }
 
-const getStoredVotes = () => {
-  try {
-    const stored = localStorage.getItem(VOTES_KEY)
-    console.log('Reading votes from localStorage:', stored)
-    return stored ? new Map(JSON.parse(stored)) : new Map()
-  } catch (error) {
-    console.error('Error reading votes from localStorage:', error)
-    return new Map()
-  }
+export const getAllSessions = async () => {
+  const response = await fetch('/api/sessions')
+  if (!response.ok) return []
+  return await response.json()
 }
 
-const setStoredVotes = (votes) => {
-  try {
-    const dataToStore = JSON.stringify(Array.from(votes.entries()))
-    console.log('Writing votes to localStorage:', dataToStore)
-    localStorage.setItem(VOTES_KEY, dataToStore)
-  } catch (error) {
-    console.error('Error writing votes to localStorage:', error)
-  }
+export const saveVote = async (sessionId, participantName, componentVotes) => {
+  const response = await fetch('/api/vote', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, participantName, componentVotes }),
+  })
+  return await response.json()
 }
 
-// Function to clear all stored data (for debugging)
-export const clearAllData = () => {
-  localStorage.removeItem(SESSIONS_KEY)
-  localStorage.removeItem(VOTES_KEY)
-  console.log('All session data cleared')
+export const getSessionVotes = async (sessionId) => {
+  const response = await fetch(`/api/votes/${sessionId}`)
+  if (!response.ok) return []
+  return await response.json()
 }
 
-// Function to list all sessions (for debugging)
-export const listAllSessions = () => {
-  const sessions = getStoredSessions()
-  console.log('All stored sessions:', Array.from(sessions.entries()))
-  return Array.from(sessions.entries())
-}
-
-export const createSession = (sessionData) => {
-  const sessionId = Math.random().toString(36).substr(2, 9)
-  const session = {
-    id: sessionId,
-    ...sessionData,
-    createdAt: new Date().toISOString(),
-    status: 'active'
-  }
-  
-  const sessions = getStoredSessions()
-  const votes = getStoredVotes()
-  
-  sessions.set(sessionId, session)
-  votes.set(sessionId, [])
-  
-  setStoredSessions(sessions)
-  setStoredVotes(votes)
-  
-  console.log('Session created:', sessionId, session)
-  console.log('All sessions:', Array.from(sessions.keys()))
-  return sessionId
-}
-
-export const getSession = (sessionId) => {
-  const sessions = getStoredSessions()
-  const session = sessions.get(sessionId)
-  console.log('Getting session:', sessionId, session)
-  return session
-}
-
-export const getAllSessions = () => {
-  const sessions = getStoredSessions()
-  return Array.from(sessions.values())
-}
-
-export const saveVote = (sessionId, participantName, componentVotes) => {
-  const votes = getStoredVotes()
-  const sessionVotes = votes.get(sessionId) || []
-  const vote = {
-    id: Math.random().toString(36).substr(2, 9),
-    participantName,
-    componentVotes,
-    timestamp: new Date().toISOString()
-  }
-  sessionVotes.push(vote)
-  votes.set(sessionId, sessionVotes)
-  setStoredVotes(votes)
-  return vote
-}
-
-export const getSessionVotes = (sessionId) => {
-  const votes = getStoredVotes()
-  return votes.get(sessionId) || []
-}
-
-export const calculateResults = (sessionId) => {
-  const session = getSession(sessionId)
-  const sessionVotes = getSessionVotes(sessionId)
-  
+export const calculateResults = (session, sessionVotes) => {
   if (!session || sessionVotes.length === 0) {
     return []
   }
