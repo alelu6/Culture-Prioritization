@@ -91,7 +91,7 @@ function Results() {
         </Typography>
       </Box>
 
-      <Box sx={{ position: 'relative', width: '100%', maxWidth: 500, aspectRatio: '1', mx: 'auto', mb: 6 }}>
+      <Box sx={{ position: 'relative', width: '100%', maxWidth: 900, minHeight: 500, mx: 'auto', mb: 6 }}>
         {/* Impact axis label (left, vertical, further left) */}
         <Box sx={{ position: 'absolute', left: -110, top: '50%', transform: 'translateY(-50%) rotate(-90deg)', fontFamily, fontWeight: 600, fontSize: 20, color: '#222', letterSpacing: 1, textAlign: 'center', width: 120, pointerEvents: 'none' }}>
           {sessionData.xAxis}
@@ -106,17 +106,18 @@ function Results() {
         {/* Low/High for Urgency (horizontal axis, closer to matrix) */}
         <Box sx={{ position: 'absolute', left: 28, bottom: -32, fontFamily, fontWeight: 500, fontSize: 16, color: '#222', textAlign: 'center', pointerEvents: 'none' }}>Low</Box>
         <Box sx={{ position: 'absolute', right: 28, bottom: -32, fontFamily, fontWeight: 500, fontSize: 16, color: '#222', textAlign: 'center', pointerEvents: 'none' }}>High</Box>
-        {/* Matrix grid, seamless (no borders) */}
+        {/* Matrix grid, auto-adjusting quadrants */}
         <Box
           sx={{
             display: 'grid',
-            gridTemplateRows: '1fr 1fr',
-            gridTemplateColumns: '1fr 1fr',
+            gridTemplateRows: 'auto auto',
+            gridTemplateColumns: 'auto auto',
+            gap: 2,
             width: '100%',
-            height: '100%',
+            minHeight: 400,
             border: 'none',
             borderRadius: 0,
-            overflow: 'hidden',
+            overflow: 'visible',
             background: 'transparent',
           }}
         >
@@ -130,8 +131,10 @@ function Results() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'flex-start',
-                  minHeight: 0,
-                  minWidth: 0,
+                  minHeight: 180,
+                  minWidth: 180,
+                  maxHeight: 350,
+                  overflowY: 'auto',
                   position: 'relative',
                   p: 0,
                   m: 0,
@@ -157,7 +160,7 @@ function Results() {
                 </Typography>
                 {/* Render components in this quadrant with vote counts */}
                 {quadrantMatrix[impact][urgency].map((comp) => (
-                  <Box key={comp.key} sx={{ mt: 2, mb: 1, px: 2, py: 1, bgcolor: '#fff', borderRadius: 2, boxShadow: 1, minWidth: 180 }}>
+                  <Box key={comp.key} sx={{ mt: 2, mb: 1, px: 2, py: 1, bgcolor: '#fff', borderRadius: 2, boxShadow: 1, minWidth: 180, width: '90%' }}>
                     <Typography sx={{ fontFamily, fontWeight: 600, color: '#023365', fontSize: 18 }}>{comp.name}</Typography>
                     <Typography sx={{ fontFamily, fontWeight: 400, color: '#555', fontSize: 14 }}>
                       {sessionData.xAxis}: High {comp.highImpactVotes} / Low {comp.totalVotes - comp.highImpactVotes} <br/>

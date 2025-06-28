@@ -70,7 +70,17 @@ function VotingSession() {
     })),
   }))
 
+  // Count votes used
+  const maxVotes = sessionData.votesPerLevel?.High || 1
+  const usedImpactVotes = Object.values(votes).filter(v => v.impact).length
+  const usedUrgencyVotes = Object.values(votes).filter(v => v.urgency).length
+  const impactVotesLeft = maxVotes - usedImpactVotes
+  const urgencyVotesLeft = maxVotes - usedUrgencyVotes
+
   const handleVoteChange = (componentKey, axis, checked) => {
+    // Prevent voting if max is reached
+    if (axis === 'impact' && !votes[componentKey]?.impact && checked && usedImpactVotes >= maxVotes) return
+    if (axis === 'urgency' && !votes[componentKey]?.urgency && checked && usedUrgencyVotes >= maxVotes) return
     setVotes((prev) => ({
       ...prev,
       [componentKey]: {
@@ -129,47 +139,74 @@ function VotingSession() {
             Vote for High Impact and High Urgency
           </Typography>
 
-          {componentsByCategory.map((cat) => (
-            <Box key={cat.name} sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1, color: '#00E6B2', fontWeight: 700 }}>
-                {cat.name}
+          <Box sx={{ overflowX: 'auto', mb: 3 }}>
+            <Box sx={{ mb: 2, display: 'flex', gap: 4 }}>
+              <Typography color="primary" fontWeight={600}>
+                Impact votes left: {impactVotesLeft} / {maxVotes}
               </Typography>
-              <Grid container spacing={2}>
-                {cat.components.map((component) => (
-                  <Grid item xs={12} md={6} key={component.key}>
-                    <Paper sx={{ p: 2, mb: 2 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                        {component.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        {component.description}
-                      </Typography>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={!!votes[component.key]?.impact}
-                            onChange={(e) => handleVoteChange(component.key, 'impact', e.target.checked)}
-                            color="primary"
-                          />
-                        }
-                        label="High Impact"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={!!votes[component.key]?.urgency}
-                            onChange={(e) => handleVoteChange(component.key, 'urgency', e.target.checked)}
-                            color="secondary"
-                          />
-                        }
-                        label="High Urgency"
-                      />
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
+              <Typography color="secondary" fontWeight={600}>
+                Urgency votes left: {urgencyVotesLeft} / {maxVotes}
+              </Typography>
             </Box>
-          ))}
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: 8 }}>Component</th>
+                  {sessionData.strategicPriorities.map((priority, idx) => (
+                    <th key={idx} style={{ textAlign: 'center', padding: 8 }}>{priority}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sessionData.categories.map((cat, catIdx) => (
+                  <React.Fragment key={cat.name}>
+                    <tr>
+                      <td colSpan={1 + sessionData.strategicPriorities.length} style={{ background: '#e0f7fa', fontWeight: 700, padding: 8 }}>
+                        {cat.name}
+                      </td>
+                    </tr>
+                    {cat.components.map((component, compIdx) => (
+                      <tr key={compIdx}>
+                        <td style={{ padding: 8, fontWeight: 600 }}>
+                          {component.name}
+                          <div style={{ fontWeight: 400, color: '#666', fontSize: 13 }}>{component.description}</div>
+                        </td>
+                        {sessionData.strategicPriorities.map((priority, priIdx) => {
+                          const compKey = `${catIdx}-${compIdx}-${priIdx}`
+                          return (
+                            <td key={priIdx} style={{ textAlign: 'center', padding: 8 }}>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={!!votes[compKey]?.impact}
+                                    onChange={(e) => handleVoteChange(compKey, 'impact', e.target.checked)}
+                                    color="primary"
+                                    disabled={(!votes[compKey]?.impact && usedImpactVotes >= maxVotes)}
+                                  />
+                                }
+                                label={<span style={{ fontSize: 13 }}>High Impact</span>}
+                              />
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={!!votes[compKey]?.urgency}
+                                    onChange={(e) => handleVoteChange(compKey, 'urgency', e.target.checked)}
+                                    color="secondary"
+                                    disabled={(!votes[compKey]?.urgency && usedUrgencyVotes >= maxVotes)}
+                                  />
+                                }
+                                label={<span style={{ fontSize: 13 }}>High Urgency</span>}
+                              />
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </Box>
 
           <Button
             type="submit"
