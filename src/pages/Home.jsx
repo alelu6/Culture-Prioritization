@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -7,6 +7,11 @@ import {
   CardContent,
   Typography,
   Grid,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import GroupIcon from '@mui/icons-material/Group'
@@ -14,6 +19,21 @@ import { clearAllData, listAllSessions } from '../utils/sessionStorage'
 
 function Home() {
   const navigate = useNavigate()
+  const [sessions, setSessions] = useState([])
+
+  useEffect(() => {
+    async function fetchSessions() {
+      try {
+        const res = await fetch('/api/sessions')
+        const data = await res.json()
+        // Convert sessions object to array
+        setSessions(Object.values(data))
+      } catch (err) {
+        setSessions([])
+      }
+    }
+    fetchSessions()
+  }, [])
 
   const handleDebugClear = () => {
     clearAllData()
@@ -102,6 +122,32 @@ function Home() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Session List Section */}
+      <Box sx={{ mt: 6 }}>
+        <Typography variant="h5" sx={{ mb: 2, color: '#023365', fontWeight: 700 }}>
+          Session List
+        </Typography>
+        <Paper sx={{ p: 2 }}>
+          {sessions.length === 0 ? (
+            <Typography color="text.secondary">No sessions found.</Typography>
+          ) : (
+            <List>
+              {sessions.map((session) => (
+                <React.Fragment key={session.id}>
+                  <ListItem button onClick={() => navigate(`/session/${session.id}`)}>
+                    <ListItemText
+                      primary={session.name || session.id}
+                      secondary={`ID: ${session.id} | Created: ${session.createdAt ? new Date(session.createdAt).toLocaleString() : ''}`}
+                    />
+                  </ListItem>
+                  <Divider />
+                </React.Fragment>
+              ))}
+            </List>
+          )}
+        </Paper>
+      </Box>
 
       {/* Debug buttons - remove these after fixing the issue */}
       <Box sx={{ mt: 4, textAlign: 'center' }}>

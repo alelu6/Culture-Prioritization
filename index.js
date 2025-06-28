@@ -97,6 +97,17 @@ app.get('/api/session/debugtest', (req, res) => {
   }
 });
 
+// List all sessions
+app.get('/api/sessions', (req, res) => {
+  try {
+    const sessions = readJson(SESSIONS_FILE);
+    res.json(sessions);
+  } catch (err) {
+    console.error('[API] Error listing sessions:', err);
+    res.status(500).json({ error: 'Failed to list sessions' });
+  }
+});
+
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
