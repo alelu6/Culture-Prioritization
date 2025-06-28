@@ -75,4 +75,14 @@ export const calculateResults = (session, sessionVotes) => {
   })
 
   return componentResults
-} 
+}
+
+// Placeholder for client-side debug tools
+export const clearAllData = () => {
+  alert('clearAllData is not implemented for server API version.');
+};
+
+export const listAllSessions = () => {
+  alert('listAllSessions is not implemented for server API version.');
+  return [];
+}; 
