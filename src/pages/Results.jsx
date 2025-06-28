@@ -121,6 +121,7 @@ function Results() {
             background: 'transparent',
           }}
         >
+          {/* Correct quadrant mapping: [row][col] => [impact][urgency] with High at top/right, Low at bottom/left */}
           {['high', 'low'].map((impact, rowIdx) =>
             ['low', 'high'].map((urgency, colIdx) => (
               <Box
