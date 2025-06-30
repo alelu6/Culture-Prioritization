@@ -152,52 +152,56 @@ function VotingSession() {
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left', padding: 8 }}>Component</th>
-                  <th style={{ textAlign: 'center', padding: 8 }}>Vote</th>
+                  {sessionData.strategicPriorities.map((priority, idx) => (
+                    <th key={idx} style={{ textAlign: 'center', padding: 8 }}>{priority}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {sessionData.categories.map((cat, catIdx) => (
                   <React.Fragment key={cat.name}>
                     <tr>
-                      <td colSpan={2} style={{ background: '#e0f7fa', fontWeight: 700, padding: 8 }}>
+                      <td colSpan={1 + sessionData.strategicPriorities.length} style={{ background: '#e0f7fa', fontWeight: 700, padding: 8 }}>
                         {cat.name}
                       </td>
                     </tr>
-                    {cat.components.map((component, compIdx) => {
-                      const compKey = `${catIdx}-${compIdx}`
-                      return (
-                        <tr key={compIdx}>
-                          <td style={{ padding: 8, fontWeight: 600 }}>
-                            {component.name}
-                            <div style={{ fontWeight: 400, color: '#666', fontSize: 13 }}>{component.description}</div>
-                          </td>
-                          <td style={{ textAlign: 'center', padding: 8 }}>
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={!!votes[compKey]?.impact}
-                                  onChange={(e) => handleVoteChange(compKey, 'impact', e.target.checked)}
-                                  color="primary"
-                                  disabled={(!votes[compKey]?.impact && usedImpactVotes >= maxVotes)}
-                                />
-                              }
-                              label={<span style={{ fontSize: 13 }}>High Impact</span>}
-                            />
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={!!votes[compKey]?.urgency}
-                                  onChange={(e) => handleVoteChange(compKey, 'urgency', e.target.checked)}
-                                  color="secondary"
-                                  disabled={(!votes[compKey]?.urgency && usedUrgencyVotes >= maxVotes)}
-                                />
-                              }
-                              label={<span style={{ fontSize: 13 }}>High Urgency</span>}
-                            />
-                          </td>
-                        </tr>
-                      )
-                    })}
+                    {cat.components.map((component, compIdx) => (
+                      <tr key={compIdx}>
+                        <td style={{ padding: 8, fontWeight: 600 }}>
+                          {component.name}
+                          <div style={{ fontWeight: 400, color: '#666', fontSize: 13 }}>{component.description}</div>
+                        </td>
+                        {sessionData.strategicPriorities.map((priority, priIdx) => {
+                          const compKey = `${catIdx}-${compIdx}-${priIdx}`
+                          return (
+                            <td key={priIdx} style={{ textAlign: 'center', padding: 8 }}>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={!!votes[compKey]?.impact}
+                                    onChange={(e) => handleVoteChange(compKey, 'impact', e.target.checked)}
+                                    color="primary"
+                                    disabled={(!votes[compKey]?.impact && usedImpactVotes >= maxVotes)}
+                                  />
+                                }
+                                label={<span style={{ fontSize: 13 }}>High Impact</span>}
+                              />
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={!!votes[compKey]?.urgency}
+                                    onChange={(e) => handleVoteChange(compKey, 'urgency', e.target.checked)}
+                                    color="secondary"
+                                    disabled={(!votes[compKey]?.urgency && usedUrgencyVotes >= maxVotes)}
+                                  />
+                                }
+                                label={<span style={{ fontSize: 13 }}>High Urgency</span>}
+                              />
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    ))}
                   </React.Fragment>
                 ))}
               </tbody>

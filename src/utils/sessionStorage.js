@@ -51,22 +51,25 @@ export const calculateResults = (session, sessionVotes) => {
     }))
   )
 
-  // Calculate results for each component
+  // Calculate results for each component, aggregating across all priorities
   const componentResults = allComponents.map((component) => {
-    const componentVotes = sessionVotes.flatMap(vote => 
-      vote.componentVotes[component.key] ? [vote.componentVotes[component.key]] : []
+    // For each vote, sum all keys that start with this component's key (e.g., '0-0-')
+    const componentVotes = sessionVotes.flatMap(vote =>
+      Object.entries(vote.componentVotes)
+        .filter(([key]) => key.startsWith(component.key + '-'))
+        .map(([, value]) => value)
     )
-    
+
     const highImpactVotes = componentVotes.filter(vote => vote.impact).length
     const highUrgencyVotes = componentVotes.filter(vote => vote.urgency).length
     const totalVotes = componentVotes.length
-    
+
     const impact = totalVotes > 0 && highImpactVotes > totalVotes / 2 ? 'high' : 'low'
     const urgency = totalVotes > 0 && highUrgencyVotes > totalVotes / 2 ? 'high' : 'low'
-    
-    return { 
-      ...component, 
-      impact, 
+
+    return {
+      ...component,
+      impact,
       urgency,
       totalVotes,
       highImpactVotes,
