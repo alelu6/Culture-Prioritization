@@ -134,7 +134,7 @@ function Results() {
                   justifyContent: 'flex-start',
                   minHeight: 180,
                   minWidth: 180,
-                  maxHeight: 350,
+                  maxHeight: 400,
                   overflowY: 'auto',
                   position: 'relative',
                   p: 0,
