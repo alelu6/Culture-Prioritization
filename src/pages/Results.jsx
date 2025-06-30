@@ -15,8 +15,6 @@ import {
 } from '@mui/material'
 import HomeIcon from '@mui/icons-material/Home'
 import { getSession, getSessionVotes, calculateResults } from '../utils/sessionStorage'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
 
 // Add quadrant labels and colors for the matrix
 const quadrantLabels = [
@@ -78,23 +76,6 @@ function Results() {
   // IBM Plex Sans font import (for global use, but here for local override)
   const fontFamily = 'IBM Plex Sans, Inter, Roboto, Arial, sans-serif';
 
-  // PDF download handler
-  const handleDownloadPDF = async () => {
-    const matrixElement = document.getElementById('results-matrix-pdf')
-    if (!matrixElement) return
-    const canvas = await html2canvas(matrixElement, { scale: 2 })
-    const imgData = canvas.toDataURL('image/png')
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-    const pageWidth = pdf.internal.pageSize.getWidth()
-    const pageHeight = pdf.internal.pageSize.getHeight()
-    // Fit image to page
-    const imgProps = pdf.getImageProperties(imgData)
-    const pdfWidth = pageWidth - 40
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width
-    pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight)
-    pdf.save(`${sessionData?.name || 'results-matrix'}.pdf`)
-  }
-
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', mt: 6, position: 'relative', fontFamily }}>
       {/* Header with session info */}
@@ -108,12 +89,9 @@ function Results() {
         <Typography variant="body2" color="text.secondary">
           Total Participants: {sessionVotes.length}
         </Typography>
-        <Button variant="outlined" sx={{ mt: 2 }} onClick={handleDownloadPDF}>
-          Download PDF
-        </Button>
       </Box>
 
-      <Box id="results-matrix-pdf" sx={{ position: 'relative', width: '100%', maxWidth: 900, minHeight: 500, mx: 'auto', mb: 6 }}>
+      <Box sx={{ position: 'relative', width: '100%', maxWidth: 900, minHeight: 500, mx: 'auto', mb: 6 }}>
         {/* Impact axis label (left, vertical, further left) */}
         <Box sx={{ position: 'absolute', left: -110, top: '50%', transform: 'translateY(-50%) rotate(-90deg)', fontFamily, fontWeight: 600, fontSize: 20, color: '#222', letterSpacing: 1, textAlign: 'center', width: 120, pointerEvents: 'none' }}>
           {sessionData.xAxis}
