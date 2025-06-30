@@ -140,7 +140,10 @@ function Home() {
                       <Button
                         variant="outlined"
                         size="small"
-                        onClick={() => navigate(`/results/${session.id}`)}
+                        onClick={e => {
+                          e.stopPropagation();
+                          navigate(`/results/${session.id}`);
+                        }}
                         sx={{ ml: 2 }}
                       >
                         View Results
