@@ -18,13 +18,13 @@ import { getSession, getSessionVotes, calculateResults } from '../utils/sessionS
 
 // Add quadrant labels and colors for the matrix
 const quadrantLabels = [
-  ['Low Impact / Low Urgency', 'Low Impact / High Urgency'],
   ['High Impact / Low Urgency', 'High Impact / High Urgency'],
+  ['Low Impact / Low Urgency', 'Low Impact / High Urgency'],
 ];
 
 const quadrantColors = [
-  ['#f5f5f5', '#ffe0b2'],
   ['#b2dfdb', '#c8e6c9'],
+  ['#f5f5f5', '#ffe0b2'],
 ];
 
 function Results() {
