@@ -135,7 +135,20 @@ function Home() {
             <List>
               {sessions.map((session) => (
                 <React.Fragment key={session.id}>
-                  <ListItem button onClick={() => navigate(`/session/${session.id}`)}>
+                  <ListItem
+                    secondaryAction={
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => navigate(`/results/${session.id}`)}
+                        sx={{ ml: 2 }}
+                      >
+                        View Results
+                      </Button>
+                    }
+                    button
+                    onClick={() => navigate(`/session/${session.id}`)}
+                  >
                     <ListItemText
                       primary={session.name || session.id}
                       secondary={`ID: ${session.id} | Created: ${session.createdAt ? new Date(session.createdAt).toLocaleString() : ''}`}
