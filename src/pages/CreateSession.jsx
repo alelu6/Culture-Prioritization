@@ -176,8 +176,13 @@ function CreateSession() {
         </Grid>
 
         <Typography variant="h6" gutterBottom>
-          Strategic Priorities
+          Strategic Priorities (optional)
         </Typography>
+        {strategicPriorities.length === 0 && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            If left empty, only one voting column will be shown for each component.
+          </Typography>
+        )}
         {strategicPriorities.map((priority, idx) => (
           <Grid container spacing={2} key={idx} sx={{ mb: 1 }} alignItems="center">
             <Grid item xs={11}>
@@ -186,11 +191,10 @@ function CreateSession() {
                 label={`Priority ${idx + 1}`}
                 value={priority}
                 onChange={(e) => handlePriorityChange(idx, e.target.value)}
-                required
               />
             </Grid>
             <Grid item xs={1}>
-              <IconButton color="error" onClick={() => handleRemovePriority(idx)} disabled={strategicPriorities.length === 1}>
+              <IconButton color="error" onClick={() => handleRemovePriority(idx)}>
                 <DeleteIcon />
               </IconButton>
             </Grid>

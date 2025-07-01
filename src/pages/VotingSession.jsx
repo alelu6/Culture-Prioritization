@@ -152,16 +152,22 @@ function VotingSession() {
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left', padding: 8 }}>Component</th>
-                  {sessionData.strategicPriorities.map((priority, idx) => (
-                    <th key={idx} style={{ textAlign: 'center', padding: 8 }}>{priority}</th>
-                  ))}
+                  {(sessionData.strategicPriorities && sessionData.strategicPriorities.filter(p => p && p.trim()).length > 0)
+                    ? sessionData.strategicPriorities.filter(p => p && p.trim()).map((priority, idx) => (
+                        <th key={idx} style={{ textAlign: 'center', padding: 8 }}>{priority}</th>
+                      ))
+                    : <th style={{ textAlign: 'center', padding: 8 }}>Vote</th>
+                  }
                 </tr>
               </thead>
               <tbody>
                 {sessionData.categories.map((cat, catIdx) => (
                   <React.Fragment key={cat.name}>
                     <tr>
-                      <td colSpan={1 + sessionData.strategicPriorities.length} style={{ background: '#e0f7fa', fontWeight: 700, padding: 8 }}>
+                      <td colSpan={(sessionData.strategicPriorities && sessionData.strategicPriorities.filter(p => p && p.trim()).length > 0)
+                        ? 1 + sessionData.strategicPriorities.filter(p => p && p.trim()).length
+                        : 2
+                      } style={{ background: '#e0f7fa', fontWeight: 700, padding: 8 }}>
                         {cat.name}
                       </td>
                     </tr>
@@ -171,17 +177,45 @@ function VotingSession() {
                           {component.name}
                           <div style={{ fontWeight: 400, color: '#666', fontSize: 13 }}>{component.description}</div>
                         </td>
-                        {sessionData.strategicPriorities.map((priority, priIdx) => {
-                          const compKey = `${catIdx}-${compIdx}-${priIdx}`
-                          return (
-                            <td key={priIdx} style={{ textAlign: 'center', padding: 8 }}>
+                        {(sessionData.strategicPriorities && sessionData.strategicPriorities.filter(p => p && p.trim()).length > 0)
+                          ? sessionData.strategicPriorities.filter(p => p && p.trim()).map((priority, priIdx) => {
+                              const compKey = `${catIdx}-${compIdx}-${priIdx}`
+                              return (
+                                <td key={priIdx} style={{ textAlign: 'center', padding: 8 }}>
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        checked={!!votes[compKey]?.impact}
+                                        onChange={(e) => handleVoteChange(compKey, 'impact', e.target.checked)}
+                                        color="primary"
+                                        disabled={(!votes[compKey]?.impact && usedImpactVotes >= maxVotes)}
+                                      />
+                                    }
+                                    label={<span style={{ fontSize: 13 }}>High Impact</span>}
+                                  />
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        checked={!!votes[compKey]?.urgency}
+                                        onChange={(e) => handleVoteChange(compKey, 'urgency', e.target.checked)}
+                                        color="secondary"
+                                        disabled={(!votes[compKey]?.urgency && usedUrgencyVotes >= maxVotes)}
+                                      />
+                                    }
+                                    label={<span style={{ fontSize: 13 }}>High Urgency</span>}
+                                  />
+                                </td>
+                              )
+                            })
+                          : (
+                            <td style={{ textAlign: 'center', padding: 8 }}>
                               <FormControlLabel
                                 control={
                                   <Checkbox
-                                    checked={!!votes[compKey]?.impact}
-                                    onChange={(e) => handleVoteChange(compKey, 'impact', e.target.checked)}
+                                    checked={!!votes[`${catIdx}-${compIdx}`]?.impact}
+                                    onChange={(e) => handleVoteChange(`${catIdx}-${compIdx}`, 'impact', e.target.checked)}
                                     color="primary"
-                                    disabled={(!votes[compKey]?.impact && usedImpactVotes >= maxVotes)}
+                                    disabled={(!votes[`${catIdx}-${compIdx}`]?.impact && usedImpactVotes >= maxVotes)}
                                   />
                                 }
                                 label={<span style={{ fontSize: 13 }}>High Impact</span>}
@@ -189,17 +223,17 @@ function VotingSession() {
                               <FormControlLabel
                                 control={
                                   <Checkbox
-                                    checked={!!votes[compKey]?.urgency}
-                                    onChange={(e) => handleVoteChange(compKey, 'urgency', e.target.checked)}
+                                    checked={!!votes[`${catIdx}-${compIdx}`]?.urgency}
+                                    onChange={(e) => handleVoteChange(`${catIdx}-${compIdx}`, 'urgency', e.target.checked)}
                                     color="secondary"
-                                    disabled={(!votes[compKey]?.urgency && usedUrgencyVotes >= maxVotes)}
+                                    disabled={(!votes[`${catIdx}-${compIdx}`]?.urgency && usedUrgencyVotes >= maxVotes)}
                                   />
                                 }
                                 label={<span style={{ fontSize: 13 }}>High Urgency</span>}
                               />
                             </td>
                           )
-                        })}
+                        }
                       </tr>
                     ))}
                   </React.Fragment>
