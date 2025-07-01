@@ -33,7 +33,7 @@ app.post('/api/session', (req, res) => {
   try {
     const sessions = readJson(SESSIONS_FILE);
     const sessionId = Math.random().toString(36).substr(2, 9);
-    sessions[sessionId] = { id: sessionId, ...req.body };
+    sessions[sessionId] = { id: sessionId, ...req.body, createdAt: new Date().toISOString() };
     writeJson(SESSIONS_FILE, sessions);
     console.log(`[API] Created session ${sessionId}`);
     res.json({ sessionId });
